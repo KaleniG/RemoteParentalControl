@@ -1,4 +1,8 @@
-OUTPUTDIR = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+IncludeDir = {}
+IncludeDir["asio"]  = "Deps/asio/asio/include"
+IncludeDir["stb"]   = "Deps/stb"
 
 workspace "RemoteParentalControl"
   startproject "ParentClient"
@@ -15,6 +19,11 @@ workspace "RemoteParentalControl"
     "Windows"
   }
 
+  flags
+  {
+    "MultiProcessorCompile"
+  }
+
   filter { "platforms:Windows" }
     system "Windows"
     systemversion "latest"
@@ -26,8 +35,8 @@ project "ParentClient"
   cppdialect "C++latest"
   staticruntime "On"
   
-  targetdir ("Bin/" .. OUTPUTDIR .. "/%{prj.name}")
-  objdir ("Bin-Int/" .. OUTPUTDIR .. "/%{prj.name}")
+  targetdir ("Bin/" .. outputdir .. "/%{prj.name}")
+  objdir ("Bin-Int/" .. outputdir .. "/%{prj.name}")
   
   files
   {
@@ -37,8 +46,28 @@ project "ParentClient"
   
   includedirs
   {
-    "%{prj.name}/Source"
+    "%{prj.name}/Source",
+    "%{IncludeDir.asio}",
+    "%{IncludeDir.stb}"
   }
+
+  defines
+  {
+    "ASIO_STANDALONE",
+    "STB_IMAGE_IMPLEMENTATION"
+  }
+
+  filter { "platforms:Windows" }
+    defines
+    {
+      "WIN32_LEAN_AND_MEAN"
+    }
+
+    links
+    {
+      "Ws2_32.lib",
+      "iphlpapi.lib"
+    }
 
   filter { "configurations:Debug" }
     symbols "On"
@@ -74,8 +103,8 @@ project "ChildClient"
   cppdialect "C++latest"
   staticruntime "On"
   
-  targetdir ("Bin/" .. OUTPUTDIR .. "/%{prj.name}")
-  objdir ("Bin-Int/" .. OUTPUTDIR .. "/%{prj.name}")
+  targetdir ("Bin/" .. outputdir .. "/%{prj.name}")
+  objdir ("Bin-Int/" .. outputdir .. "/%{prj.name}")
   
   files
   {
@@ -85,8 +114,32 @@ project "ChildClient"
   
   includedirs
   {
-    "%{prj.name}/Source"
+    "%{prj.name}/Source",
+    "%{IncludeDir.asio}",
+    "%{IncludeDir.stb}"
   }
+
+  defines
+  {
+    "ASIO_STANDALONE"
+  }
+
+  filter { "platforms:Windows" }
+    defines
+    {
+      "WIN32_LEAN_AND_MEAN"
+    }
+
+    links
+    {
+      "Ws2_32.lib",
+      "dxgi.lib",
+      "d3d11.lib",
+      "mfplat.lib",
+      "mf.lib",
+      "mfreadwrite.lib",
+      "mfuuid.lib"
+    }
 
   filter { "configurations:Debug" }
     symbols "On"

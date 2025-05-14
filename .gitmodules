@@ -1,0 +1,6 @@
+[submodule "Deps/asio"]
+	path = Deps/asio
+	url = https://github.com/chriskohlhoff/asio.git
+[submodule "Deps/stb"]
+	path = Deps/stb
+	url = https://github.com/nothings/stb.git
