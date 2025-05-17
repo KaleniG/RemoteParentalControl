@@ -1,10 +1,19 @@
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["asio"]   = "Deps/asio/asio/include"
-IncludeDir["stb"]    = "Deps/stb"
-IncludeDir["GLFW"]   = "Deps/GLFW/include"
-IncludeDir["GLAD"]   = "Deps/GLAD/include"
+IncludeDir["asio"]          = "Deps/asio/asio/include"
+IncludeDir["stb"]           = "Deps/stb"
+IncludeDir["GLFW"]          = "Deps/GLFW/include"
+IncludeDir["GLAD"]          = "Deps/GLAD/include"
+IncludeDir["libjpeg_turbo"] = "Deps/libjpeg-turbo/src"
+IncludeDir["libobs"]        = "Deps/obs-studio/libobs"
+IncludeDir["libobsconfig"]  = "Deps/obs-studio/build/config"
+
+LibDir = {}
+LibDir["libjpeg_turbo_debug"]   = "Deps/libjpeg-turbo/build/Debug"
+LibDir["libjpeg_turbo_release"] = "Deps/libjpeg-turbo/build/Release"
+LibDir["libobs_debug"] = "Deps/obs-studio/build/libobs/Debug"
+LibDir["libobs_release"] = "Deps/obs-studio/build/libobs/Release"
 
 workspace "RemoteParentalControl"
   startproject "ParentClient"
@@ -29,7 +38,7 @@ workspace "RemoteParentalControl"
   filter { "platforms:Windows" }
     system "Windows"
     systemversion "latest"
-    architecture "x86"
+    architecture "x64"
 
 group "Deps"
   include "Deps/GLFW"
@@ -57,20 +66,23 @@ project "ParentClient"
     "%{IncludeDir.asio}",
     "%{IncludeDir.stb}",
     "%{IncludeDir.GLFW}",
-    "%{IncludeDir.GLAD}"
+    "%{IncludeDir.GLAD}",
+    "%{IncludeDir.libjpeg_turbo}"
   }
 
   defines
   {
     "ASIO_STANDALONE",
     "STB_IMAGE_IMPLEMENTATION",
-    "GLFW_INCLUDE_NONE"
+    "GLFW_INCLUDE_NONE",
+    "TJ_STATIC"
   }
 
   links
   {
     "GLFW",
-    "GLAD"
+    "GLAD",
+    "turbojpeg-static.lib"
   }
 
   filter { "platforms:Windows" }
@@ -78,7 +90,6 @@ project "ParentClient"
     {
       "WIN32_LEAN_AND_MEAN"
     }
-
     links
     {
       "Ws2_32.lib",
@@ -93,6 +104,10 @@ project "ParentClient"
     {
       "CONFIG_DEBUG"
     }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug}"
+    }
 
   filter { "configurations:Release" }
     symbols "Off"
@@ -101,6 +116,10 @@ project "ParentClient"
     defines
     {
       "CONFIG_RELEASE"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}"
     }
 
   filter { "configurations:Final" }
@@ -111,6 +130,10 @@ project "ParentClient"
     defines
     {
       "CONFIG_FINAL"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}"
     }
 
 project "ChildClient"
@@ -132,12 +155,22 @@ project "ChildClient"
   {
     "%{prj.name}/Source",
     "%{IncludeDir.asio}",
-    "%{IncludeDir.stb}"
+    "%{IncludeDir.stb}",
+    "%{IncludeDir.libjpeg_turbo}",
+    "%{IncludeDir.libobs}",
+    "%{IncludeDir.libobsconfig}"
   }
 
   defines
   {
-    "ASIO_STANDALONE"
+    "ASIO_STANDALONE",
+    "TJ_STATIC"
+  }
+
+  links
+  {
+    "turbojpeg-static.lib",
+    "obs.lib"
   }
 
   filter { "platforms:Windows" }
@@ -145,16 +178,11 @@ project "ChildClient"
     {
       "WIN32_LEAN_AND_MEAN"
     }
-
     links
     {
       "Ws2_32.lib",
       "dxgi.lib",
-      "d3d11.lib",
-      "mfplat.lib",
-      "mf.lib",
-      "mfreadwrite.lib",
-      "mfuuid.lib"
+      "d3d11.lib"
     }
 
   filter { "configurations:Debug" }
@@ -165,6 +193,11 @@ project "ChildClient"
     {
       "CONFIG_DEBUG"
     }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug}",
+      "%{LibDir.libobs_debug}"
+    }
 
   filter { "configurations:Release" }
     symbols "Off"
@@ -173,6 +206,11 @@ project "ChildClient"
     defines
     {
       "CONFIG_RELEASE"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}",
+      "%{LibDir.libobs_release}"
     }
 
   filter { "configurations:Final" }
@@ -183,5 +221,10 @@ project "ChildClient"
     defines
     {
       "CONFIG_FINAL"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}",
+      "%{LibDir.libobs_release}"
     }
   
