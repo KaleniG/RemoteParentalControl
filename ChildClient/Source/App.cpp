@@ -21,6 +21,8 @@
 #define PARENT_ACCESS_REQUEST_MESSAGE "RPC_PARENT_REMOTE_ACTIVATION_REQUEST"
 #define PARENT_ACCESS_REQUEST_ACKNOWLEDGEMENT_MESSAGE "RPC_CHILD_REMOTE_ACTIVATION_REQUEST_ACKNOWLEDGEMENT"
 
+#define UDP_PACKET_MAX_SIZE 65536
+
 int main()
 {
   try
@@ -124,6 +126,8 @@ int main()
     startReceive();
 
     std::thread asioAsync(&asio::io_context::run, &ioContext);
+
+    stbi_flip_vertically_on_write(true);
 
     HRESULT result;
     Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
@@ -236,7 +240,8 @@ int main()
           std::this_thread::sleep_for(std::chrono::milliseconds(50));
           continue;
         }
-        sendSocket.send_to(asio::buffer(FrameData), asio::ip::udp::endpoint(parentIP.value(), DATA_TRANSFER_PORT));
+        if (FrameData.size() < UDP_PACKET_MAX_SIZE)
+          sendSocket.send_to(asio::buffer(FrameData), asio::ip::udp::endpoint(parentIP.value(), DATA_TRANSFER_PORT));
       }
       RPC_INFO("[CHILD IMAGE SEND] Sent an image of {} bytes with resolution {}x{}", FrameData.size() - 8, desc.Width, desc.Height);
     }

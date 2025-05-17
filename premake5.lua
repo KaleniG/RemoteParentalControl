@@ -1,8 +1,10 @@
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["asio"]  = "Deps/asio/asio/include"
-IncludeDir["stb"]   = "Deps/stb"
+IncludeDir["asio"]   = "Deps/asio/asio/include"
+IncludeDir["stb"]    = "Deps/stb"
+IncludeDir["GLFW"]   = "Deps/GLFW/include"
+IncludeDir["GLAD"]   = "Deps/GLAD/include"
 
 workspace "RemoteParentalControl"
   startproject "ParentClient"
@@ -29,6 +31,11 @@ workspace "RemoteParentalControl"
     systemversion "latest"
     architecture "x86"
 
+group "Deps"
+  include "Deps/GLFW"
+  include "Deps/GLAD"
+group ""
+
 project "ParentClient"
   location "ParentClient"
   language "C++"
@@ -48,13 +55,22 @@ project "ParentClient"
   {
     "%{prj.name}/Source",
     "%{IncludeDir.asio}",
-    "%{IncludeDir.stb}"
+    "%{IncludeDir.stb}",
+    "%{IncludeDir.GLFW}",
+    "%{IncludeDir.GLAD}"
   }
 
   defines
   {
     "ASIO_STANDALONE",
-    "STB_IMAGE_IMPLEMENTATION"
+    "STB_IMAGE_IMPLEMENTATION",
+    "GLFW_INCLUDE_NONE"
+  }
+
+  links
+  {
+    "GLFW",
+    "GLAD"
   }
 
   filter { "platforms:Windows" }
