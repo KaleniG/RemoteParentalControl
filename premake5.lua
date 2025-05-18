@@ -6,14 +6,10 @@ IncludeDir["stb"]           = "Deps/stb"
 IncludeDir["GLFW"]          = "Deps/GLFW/include"
 IncludeDir["GLAD"]          = "Deps/GLAD/include"
 IncludeDir["libjpeg_turbo"] = "Deps/libjpeg-turbo/src"
-IncludeDir["libobs"]        = "Deps/obs-studio/libobs"
-IncludeDir["libobsconfig"]  = "Deps/obs-studio/build/config"
 
 LibDir = {}
 LibDir["libjpeg_turbo_debug"]   = "Deps/libjpeg-turbo/build/Debug"
 LibDir["libjpeg_turbo_release"] = "Deps/libjpeg-turbo/build/Release"
-LibDir["libobs_debug"] = "Deps/obs-studio/build/libobs/Debug"
-LibDir["libobs_release"] = "Deps/obs-studio/build/libobs/Release"
 
 workspace "RemoteParentalControl"
   startproject "ParentClient"
@@ -156,9 +152,7 @@ project "ChildClient"
     "%{prj.name}/Source",
     "%{IncludeDir.asio}",
     "%{IncludeDir.stb}",
-    "%{IncludeDir.libjpeg_turbo}",
-    "%{IncludeDir.libobs}",
-    "%{IncludeDir.libobsconfig}"
+    "%{IncludeDir.libjpeg_turbo}"
   }
 
   defines
@@ -195,8 +189,7 @@ project "ChildClient"
     }
     libdirs
     {
-      "%{LibDir.libjpeg_turbo_debug}",
-      "%{LibDir.libobs_debug}"
+      "%{LibDir.libjpeg_turbo_debug}"
     }
 
   filter { "configurations:Release" }
@@ -209,8 +202,7 @@ project "ChildClient"
     }
     libdirs
     {
-      "%{LibDir.libjpeg_turbo_release}",
-      "%{LibDir.libobs_release}"
+      "%{LibDir.libjpeg_turbo_release}"
     }
 
   filter { "configurations:Final" }
@@ -224,7 +216,6 @@ project "ChildClient"
     }
     libdirs
     {
-      "%{LibDir.libjpeg_turbo_release}",
-      "%{LibDir.libobs_release}"
+      "%{LibDir.libjpeg_turbo_release}"
     }
   
