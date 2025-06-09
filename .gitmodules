@@ -10,6 +10,3 @@
 [submodule "Deps/libjpeg-turbo"]
 	path = Deps/libjpeg-turbo
 	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
-[submodule "Deps/obs-studio"]
-	path = Deps/obs-studio
-	url = https://github.com/obsproject/obs-studio.git

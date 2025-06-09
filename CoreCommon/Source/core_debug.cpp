@@ -1,4 +1,4 @@
-#include "Core/Debug.h"
+#include "core_debug.h"
 
 #if defined(PLATFORM_WINDOWS)
 #include <windows.h>
@@ -12,38 +12,38 @@ namespace rpc
   static HANDLE s_ConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
 
-  void ConsolePrint(const std::string& time, const std::string& message, LogLevel level)
+  void console_print(const std::string& time, const std::string& message, log_level level)
   {
     std::string finalMessage;
 #if !defined(PLATFORM_WINDOWS)
     switch (level)
     {
-    case LogLevel::Info:
+    case log_level::info:
       finalMessage.append("\033[38;5;15m\033[48;5;0m");
       break;
-    case LogLevel::Warn:
+    case log_level::warn:
       finalMessage.append("\033[38;5;11m\033[48;5;0m");
       break;
-    case LogLevel::Error:
+    case log_level::error:
       finalMessage.append("\033[38;5;9m\033[48;5;0m");
       break;
-    case LogLevel::Assert:
+    case log_level::assert:
       finalMessage.append("\033[38;5;15m\033[48;5;9m");
       break;
     }
 #else
     switch (level)
     {
-    case LogLevel::Info:
+    case log_level::info:
       SetConsoleTextAttribute(s_ConsoleHandle, 15 | (0 << 4));
       break;
-    case LogLevel::Warn:
+    case log_level::warn:
       SetConsoleTextAttribute(s_ConsoleHandle, 14 | (0 << 4));
       break;
-    case LogLevel::Error:
+    case log_level::error:
       SetConsoleTextAttribute(s_ConsoleHandle, 12 | (0 << 4));
       break;
-    case LogLevel::Assert:
+    case log_level::assert:
       SetConsoleTextAttribute(s_ConsoleHandle, 15 | (12 << 4));
       break;
     }
@@ -56,7 +56,7 @@ namespace rpc
     finalMessage.append("\n");
 #if defined(PLATFORM_WINDOWS)
     DWORD written;
-    WriteConsoleA(s_ConsoleHandle, finalMessage.c_str(), finalMessage.size(), &written, nullptr);
+    WriteConsoleA(s_ConsoleHandle, finalMessage.c_str(), static_cast<DWORD>(finalMessage.size()), &written, nullptr);
     SetConsoleTextAttribute(s_ConsoleHandle, 7 | (0 << 4));
 #else
     write(STDOUT_FILENO, finalMessage.c_str(), finalMessage.size());

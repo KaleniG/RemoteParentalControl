@@ -1,10 +1,9 @@
 #pragma once
 
-#include <filesystem>
 #include <string>
 #include <format>
 
-#include "Core/PlatformDetection.h"
+#include "core_platform.h"
 
 #if defined(PLATFORM_WINDOWS)
 #define RPC_DEBUG_BREAK() __debugbreak()
@@ -15,30 +14,30 @@
 
 namespace rpc
 {
-  enum class LogLevel
+  enum class log_level
   {
-    Info, Warn, Error, Assert
+    info, warn, error, assert
   };
 
-  void ConsolePrint(const std::string& time, const std::string& message, LogLevel level);
+  void console_print(const std::string& time, const std::string& message, log_level level);
 }
 
 #if defined(CONFIG_DEBUG) || defined(CONFIG_RELEASE)
 #define RPC_INFO(fmt, ...) {\
 std::string message = std::format(fmt, __VA_ARGS__);\
-rpc::ConsolePrint(__TIME__, message, rpc::LogLevel::Info);}\
+rpc::console_print(__TIME__, message, rpc::log_level::info);}\
 
 #define RPC_WARN(fmt, ...) {\
 std::string message = std::format(fmt, __VA_ARGS__);\
-rpc::ConsolePrint(__TIME__, message, rpc::LogLevel::Warn);}\
+rpc::console_print(__TIME__, message, rpc::log_level::warn);}\
 
 #define RPC_ERROR(fmt, ...) {\
 std::string message = std::format(fmt, __VA_ARGS__);\
-rpc::ConsolePrint(__TIME__, message, rpc::LogLevel::Error);}\
+rpc::console_print(__TIME__, message, rpc::log_level::error);}\
 
 #define RPC_ASSERT(x, fmt, ...) { if (!(x)) { \
 std::string message = std::format(fmt, __VA_ARGS__);\
-rpc::ConsolePrint(__TIME__, message, rpc::LogLevel::Assert);\
+rpc::console_print(__TIME__, message, rpc::log_level::assert);\
 RPC_DEBUG_BREAK(); } }\
 
 #elif defined(CONFIG_FINAL)
@@ -49,5 +48,4 @@ RPC_DEBUG_BREAK(); } }\
 #define RPC_ERROR(fmt, ...)
 
 #define RPC_ASSERT(x, fmt, ...)
-
 #endif

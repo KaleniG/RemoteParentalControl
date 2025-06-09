@@ -6,6 +6,8 @@ IncludeDir["stb"]           = "Deps/stb"
 IncludeDir["GLFW"]          = "Deps/GLFW/include"
 IncludeDir["GLAD"]          = "Deps/GLAD/include"
 IncludeDir["libjpeg_turbo"] = "Deps/libjpeg-turbo/src"
+IncludeDir["NetCommon"]     = "NetCommon/Source"
+IncludeDir["CoreCommon"]    = "CoreCommon/Source"
 
 LibDir = {}
 LibDir["libjpeg_turbo_debug"]   = "Deps/libjpeg-turbo/build/Debug"
@@ -31,6 +33,11 @@ workspace "RemoteParentalControl"
     "MultiProcessorCompile"
   }
 
+  defines
+  {
+    "_CRT_SECURE_NO_WARNINGS"
+  }
+
   filter { "platforms:Windows" }
     system "Windows"
     systemversion "latest"
@@ -39,8 +46,121 @@ workspace "RemoteParentalControl"
 group "Deps"
   include "Deps/GLFW"
   include "Deps/GLAD"
-group ""
+  
+  project "NetCommon"
+    location "NetCommon"
+    language "C++"
+    cppdialect "C++latest"
+    staticruntime "On"
+    kind "StaticLib"
+    
+    targetdir ("Bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("Bin-Int/" .. outputdir .. "/%{prj.name}")
+    
+    files
+    {
+      "%{prj.name}/Source/**.cpp",
+      "%{prj.name}/Source/**.h"
+    }
+    
+    includedirs
+    {
+      "%{prj.name}/Source",
+      "%{IncludeDir.asio}"
+    }
+    
+    defines
+    {
+      "ASIO_STANDALONE"
+    }
 
+    filter { "platforms:Windows" }
+    defines
+    {
+      "WIN32_LEAN_AND_MEAN",
+      "_WIN32_WINNT=0x0601"
+    }
+    links
+    {
+      "Ws2_32.lib"
+    }
+    
+    filter { "configurations:Debug" }
+    symbols "On"
+    optimize "Off"
+    defines
+    {
+      "CONFIG_DEBUG"
+    }
+    
+    filter { "configurations:Release" }
+    symbols "Off"
+    optimize "Full"
+    defines
+    {
+      "CONFIG_RELEASE"
+    }
+    
+    filter { "configurations:Final" }
+    symbols "Off"
+    optimize "Full"
+    defines
+    {
+      "CONFIG_FINAL"
+    }
+
+  project "CoreCommon"
+    location "CoreCommon"
+    language "C++"
+    cppdialect "C++latest"
+    staticruntime "On"
+    kind "StaticLib"
+    
+    targetdir ("Bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("Bin-Int/" .. outputdir .. "/%{prj.name}")
+    
+    files
+    {
+      "%{prj.name}/Source/**.cpp",
+      "%{prj.name}/Source/**.h"
+    }
+    
+    includedirs
+    {
+      "%{prj.name}/Source"
+    }
+
+    filter { "platforms:Windows" }
+    defines
+    {
+      "WIN32_LEAN_AND_MEAN"
+    }
+    
+    filter { "configurations:Debug" }
+    symbols "On"
+    optimize "Off"
+    defines
+    {
+      "CONFIG_DEBUG"
+    }
+    
+    filter { "configurations:Release" }
+    symbols "Off"
+    optimize "Full"
+    defines
+    {
+      "CONFIG_RELEASE"
+    }
+    
+    filter { "configurations:Final" }
+    symbols "Off"
+    optimize "Full"
+    defines
+    {
+      "CONFIG_FINAL"
+    }
+group ""
+  
 project "ParentClient"
   location "ParentClient"
   language "C++"
@@ -59,17 +179,16 @@ project "ParentClient"
   includedirs
   {
     "%{prj.name}/Source",
-    "%{IncludeDir.asio}",
     "%{IncludeDir.stb}",
     "%{IncludeDir.GLFW}",
     "%{IncludeDir.GLAD}",
-    "%{IncludeDir.libjpeg_turbo}"
+    "%{IncludeDir.libjpeg_turbo}",
+    "%{IncludeDir.NetCommon}",
+    "%{IncludeDir.CoreCommon}"
   }
 
   defines
   {
-    "ASIO_STANDALONE",
-    "STB_IMAGE_IMPLEMENTATION",
     "GLFW_INCLUDE_NONE",
     "TJ_STATIC"
   }
@@ -78,18 +197,15 @@ project "ParentClient"
   {
     "GLFW",
     "GLAD",
-    "turbojpeg-static.lib"
+    "turbojpeg-static.lib",
+    "NetCommon",
+    "CoreCommon"
   }
 
   filter { "platforms:Windows" }
     defines
     {
       "WIN32_LEAN_AND_MEAN"
-    }
-    links
-    {
-      "Ws2_32.lib",
-      "iphlpapi.lib"
     }
 
   filter { "configurations:Debug" }
@@ -150,21 +266,22 @@ project "ChildClient"
   includedirs
   {
     "%{prj.name}/Source",
-    "%{IncludeDir.asio}",
     "%{IncludeDir.stb}",
-    "%{IncludeDir.libjpeg_turbo}"
+    "%{IncludeDir.libjpeg_turbo}",
+    "%{IncludeDir.NetCommon}",
+    "%{IncludeDir.CoreCommon}"
   }
 
   defines
   {
-    "ASIO_STANDALONE",
     "TJ_STATIC"
   }
 
   links
   {
     "turbojpeg-static.lib",
-    "obs.lib"
+    "NetCommon",
+    "CoreCommon"
   }
 
   filter { "platforms:Windows" }
@@ -174,7 +291,6 @@ project "ChildClient"
     }
     links
     {
-      "Ws2_32.lib",
       "dxgi.lib",
       "d3d11.lib"
     }
