@@ -19,18 +19,19 @@ namespace rpc
       message_header<T> header = {};
       std::vector<uint8_t> body;
 
-      void push_back(void* data, size_t size)
+      void push_back(const std::vector<uint8_t>& buffer)
       {
-        size_t i = body.size();
-        body.resize(body.size() + size);
-        std::memcpy(body.data() + i, data, size);
+        body.insert(body.end(), buffer.begin(), buffer.end());
         header.size = body.size();
       }
 
-      void pull_back(void* out, size_t size)
+      void pull_back(std::vector<uint8_t>& out_buffer, size_t size)
       {
+        if (size > body.size())
+          throw std::runtime_error("Attempt to pull more data than available in message body");
+
         size_t i = body.size() - size;
-        std::memcpy(out, body.data() + i, size);
+        out_buffer.insert(out_buffer.end(), body.begin() + i, body.end());
         body.resize(i);
         header.size = body.size();
       }

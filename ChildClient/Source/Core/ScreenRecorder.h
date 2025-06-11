@@ -14,14 +14,15 @@ namespace rpc
 {
   struct frame_data
   {
-    int32_t quality = 0;
-    int32_t height = 0;
-    int32_t width = 0;
+    uint32_t quality = 0;
+    uint32_t height = 0;
+    uint32_t width = 0;
+    uint64_t size = 0;
     std::vector<uint8_t> pixels;
 
     bool is_valid() const
     {
-      return !pixels.empty() && quality <= 100 && quality >= 1 && height > 0 && width > 0;
+      return !pixels.empty() && quality <= 100 && quality >= 1 && height > 0 && width > 0 && size > 0;
     }
   };
 
@@ -31,7 +32,8 @@ namespace rpc
     ScreenRecorder(int32_t frame_quality);
     ~ScreenRecorder();
 
-    void SetFrameQuality(int32_t quality);
+    void SetFrameQuality(uint32_t quality);
+    uint32_t GetFrameQuality() const;
 
     frame_data GetFrame();
 
@@ -39,6 +41,6 @@ namespace rpc
     Microsoft::WRL::ComPtr<ID3D11Device> m_D3DDevice;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_D3DContext;
     Microsoft::WRL::ComPtr<IDXGIOutputDuplication> m_DXGIOutputDuplication;
-    int32_t m_FrameQuality;
+    uint32_t m_FrameQuality;
   };
 }

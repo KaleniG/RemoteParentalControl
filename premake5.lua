@@ -182,6 +182,7 @@ project "ParentClient"
     "%{IncludeDir.stb}",
     "%{IncludeDir.GLFW}",
     "%{IncludeDir.GLAD}",
+    "%{IncludeDir.asio}",
     "%{IncludeDir.libjpeg_turbo}",
     "%{IncludeDir.NetCommon}",
     "%{IncludeDir.CoreCommon}"
@@ -267,6 +268,7 @@ project "ChildClient"
   {
     "%{prj.name}/Source",
     "%{IncludeDir.stb}",
+    "%{IncludeDir.asio}",
     "%{IncludeDir.libjpeg_turbo}",
     "%{IncludeDir.NetCommon}",
     "%{IncludeDir.CoreCommon}"

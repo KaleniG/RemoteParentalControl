@@ -139,8 +139,7 @@ namespace rpc
 					client.reset();
 
 					// Then physically remove it from the container
-					m_Connections.erase(
-						std::remove(m_Connections.begin(), m_Connections.end(), client), m_Connections.end());
+					m_Connections.erase(std::remove(m_Connections.begin(), m_Connections.end(), client), m_Connections.end());
 				}
 			}
 

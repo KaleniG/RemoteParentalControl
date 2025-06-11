@@ -44,10 +44,15 @@ namespace rpc
 
   }
 
-  void ScreenRecorder::SetFrameQuality(int32_t quality)
+  void ScreenRecorder::SetFrameQuality(uint32_t quality)
   {
     RPC_ASSERT(quality >= 1 && quality <= 100, "[SCREEN RECORDER] Frame quality should be in range of 1 to 100");
     m_FrameQuality = quality;
+  }
+
+  uint32_t ScreenRecorder::GetFrameQuality() const
+  {
+    return m_FrameQuality;
   }
 
   frame_data ScreenRecorder::GetFrame()
@@ -151,6 +156,7 @@ namespace rpc
     frameData.width = desc.Width;
     frameData.quality = m_FrameQuality;
     frameData.pixels = std::move(JPEGBuffer.data);
+    frameData.size = frameData.pixels.size();
 
     return frameData;
   }
