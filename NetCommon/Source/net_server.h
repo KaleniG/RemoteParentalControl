@@ -1,5 +1,7 @@
 #pragma once
 
+#include <YKLib.h>
+
 #include "net_common.h"
 #include "net_tsdeque.h"
 #include "net_message.h"
@@ -44,11 +46,9 @@ namespace rpc
 				catch (std::exception& e)
 				{
 					// Something prohibited the server from listening
-					std::cerr << "[SERVER] Exception: " << e.what() << "\n";
+					YK_ERROR("[SERVER] Exception: {}", e.what());
 					return false;
 				}
-
-				std::cout << "[SERVER] Started!\n";
 				return true;
 			}
 
@@ -60,9 +60,6 @@ namespace rpc
 
 				// Tidy up the context thread
 				if (m_ThreadContext.joinable()) m_ThreadContext.join();
-
-				// Inform someone, anybody, if they care...
-				std::cout << "[SERVER] Stopped!\n";
 			}
 
 			// ASYNC - Instruct asio to wait for connection

@@ -15,7 +15,7 @@ namespace rpc
       server_frame_quality_change
     };
 
-    static constexpr const char* parent_id = "192.168.1.11";
+    static constexpr const char* parent_id = "127.0.0.1"; //192.168.1.11
     static constexpr uint16_t parent_port = 12120;
   }
 }

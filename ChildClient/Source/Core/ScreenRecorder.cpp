@@ -2,12 +2,13 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+#include <YKLib.h>
 
 namespace rpc
 {
   ScreenRecorder::ScreenRecorder(int32_t frame_quality)
   {
-    RPC_ASSERT(frame_quality >= 1 && frame_quality <= 100, "[SCREEN RECORDER] Frame quality should be in range of 1 to 100");
+    YK_ASSERT(frame_quality >= 1 && frame_quality <= 100, "[SCREEN RECORDER] Frame quality should be in range of 1 to 100");
 
     m_FrameQuality = frame_quality;
 
@@ -17,26 +18,26 @@ namespace rpc
 
     D3D_FEATURE_LEVEL featureLevel;
     result = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &m_D3DDevice, &featureLevel, &m_D3DContext);
-    RPC_ASSERT(!FAILED(result), "[SCREEN RECORDER] D3D11 error: {}", HRESULTToString(result));
+    YK_ASSERT(!FAILED(result), "[SCREEN RECORDER] D3D11 error: {}", HRESULTToString(result));
 
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
     result = m_D3DDevice.As(&dxgiDevice);
-    RPC_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
+    YK_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
 
     Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
     result = dxgiDevice->GetAdapter(&adapter);
-    RPC_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
+    YK_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
 
     Microsoft::WRL::ComPtr<IDXGIOutput> output;
     result = adapter->EnumOutputs(0, &output);
-    RPC_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
+    YK_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
 
     Microsoft::WRL::ComPtr<IDXGIOutput1> output1;
     result = output.As(&output1);
-    RPC_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
+    YK_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
 
     result = output1->DuplicateOutput(m_D3DDevice.Get(), &m_DXGIOutputDuplication);
-    RPC_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
+    YK_ASSERT(!FAILED(result), "[SCREEN RECORDER] DXGI error: {}", HRESULTToString(result));
   }
 
   ScreenRecorder::~ScreenRecorder()
@@ -46,7 +47,7 @@ namespace rpc
 
   void ScreenRecorder::SetFrameQuality(uint32_t quality)
   {
-    RPC_ASSERT(quality >= 1 && quality <= 100, "[SCREEN RECORDER] Frame quality should be in range of 1 to 100");
+    YK_ASSERT(quality >= 1 && quality <= 100, "[SCREEN RECORDER] Frame quality should be in range of 1 to 100");
     m_FrameQuality = quality;
   }
 
@@ -71,14 +72,14 @@ namespace rpc
 
     if (FAILED(result))
     {
-      RPC_WARN("[SCREEN CAPTURE] Failed to acquire frame: {}", HRESULTToString(result));
+      YK_WARN("[SCREEN CAPTURE] Failed to acquire frame: {}", HRESULTToString(result));
       return frame_data();
     }
 
     if (frameInfo.AccumulatedFrames == 0)
     {
       result = m_DXGIOutputDuplication->ReleaseFrame();
-      RPC_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
+      YK_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
       return frame_data();
     }
 
@@ -86,9 +87,9 @@ namespace rpc
     result = desktopResource.As(&frame);
     if (FAILED(result))
     {
-      RPC_WARN("[SCREEN CAPTURE] Failed to obtaining a texture, error: {}", HRESULTToString(result));
+      YK_WARN("[SCREEN CAPTURE] Failed to obtaining a texture, error: {}", HRESULTToString(result));
       result = m_DXGIOutputDuplication->ReleaseFrame();
-      RPC_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
+      YK_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
       return frame_data();
     }
 
@@ -105,9 +106,9 @@ namespace rpc
     result = m_D3DDevice->CreateTexture2D(&cpuDesc, nullptr, &cpuTexture);
     if (FAILED(result))
     {
-      RPC_WARN("[SCREEN CAPTURE] Failed to create a staging texture, error: {}", HRESULTToString(result));
+      YK_WARN("[SCREEN CAPTURE] Failed to create a staging texture, error: {}", HRESULTToString(result));
       result = m_DXGIOutputDuplication->ReleaseFrame();
-      RPC_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
+      YK_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
       return frame_data();
     }
 
@@ -117,9 +118,9 @@ namespace rpc
     result = m_D3DContext->Map(cpuTexture.Get(), 0, D3D11_MAP_READ, 0, &mapped);
     if (FAILED(result))
     {
-      RPC_WARN("[SCREEN CAPTURE] Failed to map a texture, error: {}", HRESULTToString(result));
+      YK_WARN("[SCREEN CAPTURE] Failed to map a texture, error: {}", HRESULTToString(result));
       result = m_DXGIOutputDuplication->ReleaseFrame();
-      RPC_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
+      YK_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
       return frame_data();
     }
 
@@ -136,7 +137,7 @@ namespace rpc
 
     m_D3DContext->Unmap(cpuTexture.Get(), 0);
     result = m_DXGIOutputDuplication->ReleaseFrame();
-    RPC_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
+    YK_ASSERT(!FAILED(result), "[SCREEN CAPTURE] Failed to release the frame, error: {}", HRESULTToString(result));
 
     struct MemoryBuffer
     {

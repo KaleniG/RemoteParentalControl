@@ -10,3 +10,6 @@
 [submodule "Deps/libjpeg-turbo"]
 	path = Deps/libjpeg-turbo
 	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
+[submodule "Deps/YKLib"]
+	path = Deps/YKLib
+	url = https://github.com/KaleniG/YKLib.git

@@ -8,6 +8,7 @@ IncludeDir["GLAD"]          = "Deps/GLAD/include"
 IncludeDir["libjpeg_turbo"] = "Deps/libjpeg-turbo/src"
 IncludeDir["NetCommon"]     = "NetCommon/Source"
 IncludeDir["CoreCommon"]    = "CoreCommon/Source"
+IncludeDir["YKLib"]         = "Deps/YKLib/YKLib/Source"
 
 LibDir = {}
 LibDir["libjpeg_turbo_debug"]   = "Deps/libjpeg-turbo/build/Debug"
@@ -19,13 +20,19 @@ workspace "RemoteParentalControl"
   configurations 
   { 
     "Debug",
+    "DebugDLL",
     "Release",
-    "Final"
+    "ReleaseDLL",
+    "Final",
+    "FinalDLL"
   }
 
   platforms 
   { 
-    "Windows"
+    "Win32",
+    "Win64",
+    "Linux",
+    "MacOS"
   }
 
   flags
@@ -33,19 +40,64 @@ workspace "RemoteParentalControl"
     "MultiProcessorCompile"
   }
 
-  defines
-  {
-    "_CRT_SECURE_NO_WARNINGS"
-  }
-
-  filter { "platforms:Windows" }
+  filter { "platforms:Win32" }
     system "Windows"
+    architecture "x86"
     systemversion "latest"
+    defines { "PLATFORM_WINDOWS", "ARCH_X86", "_CRT_SECURE_NO_WARNINGS", "_SCL_SECURE_NO_WARNINGS", "NOMINMAX" }
+
+  filter { "platforms:Win64" }
+    system "Windows"
     architecture "x64"
+    systemversion "latest"
+    defines { "PLATFORM_WINDOWS", "ARCH_X64", "_CRT_SECURE_NO_WARNINGS", "_SCL_SECURE_NO_WARNINGS", "NOMINMAX" }
+
+  filter { "platforms:Linux" }
+    system "Linux"
+    architecture "x64"
+    defines { "PLATFORM_LINUX", "ARCH_X64" }
+    buildoptions { "-std=c++20" }
+
+  filter { "platforms:MacOS" }
+    system "macosx"
+    architecture "x64"
+    defines { "PLATFORM_MACOS", "ARCH_X64" }
+
+    -- Configuration Filters
+  filter { "configurations:Debug" }
+    symbols "On"
+    optimize "Off"
+    defines { "CONFIG_DEBUG" }
+
+  filter { "configurations:DebugDLL" }
+    symbols "On"
+    optimize "Off"
+    defines { "CONFIG_DEBUG", "YK_USE_DYNAMIC_LIB" }
+
+  filter { "configurations:Release" }
+    symbols "Off"
+    optimize "Full"
+    defines { "CONFIG_RELEASE" }
+
+  filter { "configurations:ReleaseDLL" }
+    symbols "Off"
+    optimize "Full"
+    defines { "CONFIG_RELEASE", "YK_USE_DYNAMIC_LIB" }
+
+  filter { "configurations:Final" }
+    symbols "Off"
+    optimize "Full"
+    defines { "CONFIG_FINAL" }
+
+  filter { "configurations:FinalDLL" }
+    symbols "Off"
+    optimize "Full"
+    defines { "CONFIG_FINAL", "YK_USE_DYNAMIC_LIB" }
 
 group "Deps"
   include "Deps/GLFW"
   include "Deps/GLAD"
+  include "Deps/YKLib/YKLib"
   
   project "NetCommon"
     location "NetCommon"
@@ -66,7 +118,8 @@ group "Deps"
     includedirs
     {
       "%{prj.name}/Source",
-      "%{IncludeDir.asio}"
+      "%{IncludeDir.asio}",
+      "%{IncludeDir.YKLib}"
     }
     
     defines
@@ -74,40 +127,56 @@ group "Deps"
       "ASIO_STANDALONE"
     }
 
-    filter { "platforms:Windows" }
-    defines
-    {
-      "WIN32_LEAN_AND_MEAN",
-      "_WIN32_WINNT=0x0601"
-    }
     links
     {
-      "Ws2_32.lib"
+      "YKLib"
     }
+
+    filter { "platforms:Win32 or Win64" }
+      defines
+      {
+        "WIN32_LEAN_AND_MEAN",
+        "_WIN32_WINNT=0x0601"
+      }
+      links
+      {
+        "Ws2_32.lib"
+      }
     
     filter { "configurations:Debug" }
-    symbols "On"
-    optimize "Off"
-    defines
-    {
-      "CONFIG_DEBUG"
-    }
+      symbols "On"
+      optimize "Off"
+      defines
+      {
+        "CONFIG_DEBUG",
+        "YK_ENABLE_DEBUG_LOG"
+      }
+
+    filter { "configurations:DebugDLL" }
+      symbols "On"
+      optimize "Off"
+      defines
+      {
+        "CONFIG_DEBUG",
+        "YK_ENABLE_DEBUG_LOG"
+      }
     
     filter { "configurations:Release" }
-    symbols "Off"
-    optimize "Full"
-    defines
-    {
-      "CONFIG_RELEASE"
-    }
+      symbols "Off"
+      optimize "Full"
+      defines
+      {
+        "CONFIG_RELEASE",
+        "YK_ENABLE_DEBUG_LOG"
+      }
     
     filter { "configurations:Final" }
-    symbols "Off"
-    optimize "Full"
-    defines
-    {
-      "CONFIG_FINAL"
-    }
+      symbols "Off"
+      optimize "Full"
+      defines
+      {
+        "CONFIG_FINAL"
+      }
 
   project "CoreCommon"
     location "CoreCommon"
@@ -185,7 +254,8 @@ project "ParentClient"
     "%{IncludeDir.asio}",
     "%{IncludeDir.libjpeg_turbo}",
     "%{IncludeDir.NetCommon}",
-    "%{IncludeDir.CoreCommon}"
+    "%{IncludeDir.CoreCommon}",
+    "%{IncludeDir.YKLib}"
   }
 
   defines
@@ -200,10 +270,11 @@ project "ParentClient"
     "GLAD",
     "turbojpeg-static.lib",
     "NetCommon",
-    "CoreCommon"
+    "CoreCommon",
+    "YKLib"
   }
 
-  filter { "platforms:Windows" }
+  filter { "platforms:Win32 or Win64" }
     defines
     {
       "WIN32_LEAN_AND_MEAN"
@@ -215,7 +286,22 @@ project "ParentClient"
     kind "ConsoleApp"
     defines
     {
-      "CONFIG_DEBUG"
+      "CONFIG_DEBUG",
+      "YK_ENABLE_DEBUG_LOG"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug}"
+    }
+
+  filter { "configurations:DebugDLL" }
+    symbols "On"
+    optimize "Off"
+    kind "ConsoleApp"
+    defines
+    {
+      "CONFIG_DEBUG",
+      "YK_ENABLE_DEBUG_LOG"
     }
     libdirs
     {
@@ -228,7 +314,22 @@ project "ParentClient"
     kind "ConsoleApp"
     defines
     {
-      "CONFIG_RELEASE"
+      "CONFIG_RELEASE",
+      "YK_ENABLE_DEBUG_LOG"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}"
+    }
+
+   filter { "configurations:ReleaseDLL" }
+    symbols "Off"
+    optimize "Full"
+    kind "ConsoleApp"
+    defines
+    {
+      "CONFIG_RELEASE",
+      "YK_ENABLE_DEBUG_LOG"
     }
     libdirs
     {
@@ -236,6 +337,20 @@ project "ParentClient"
     }
 
   filter { "configurations:Final" }
+    symbols "Off"
+    optimize "Full"
+    kind "WindowedApp"
+    entrypoint "mainCRTStartup"
+    defines
+    {
+      "CONFIG_FINAL"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}"
+    }
+
+  filter { "configurations:FinalDLL" }
     symbols "Off"
     optimize "Full"
     kind "WindowedApp"
@@ -271,7 +386,8 @@ project "ChildClient"
     "%{IncludeDir.asio}",
     "%{IncludeDir.libjpeg_turbo}",
     "%{IncludeDir.NetCommon}",
-    "%{IncludeDir.CoreCommon}"
+    "%{IncludeDir.CoreCommon}",
+    "%{IncludeDir.YKLib}"
   }
 
   defines
@@ -283,10 +399,11 @@ project "ChildClient"
   {
     "turbojpeg-static.lib",
     "NetCommon",
-    "CoreCommon"
+    "CoreCommon",
+    "YKLib"
   }
 
-  filter { "platforms:Windows" }
+  filter { "platforms:Win32 or Win64" }
     defines
     {
       "WIN32_LEAN_AND_MEAN"
@@ -303,7 +420,22 @@ project "ChildClient"
     kind "ConsoleApp"
     defines
     {
-      "CONFIG_DEBUG"
+      "CONFIG_DEBUG",
+      "YK_ENABLE_DEBUG_LOG"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug}"
+    }
+
+  filter { "configurations:DebugDLL" }
+    symbols "On"
+    optimize "Off"
+    kind "ConsoleApp"
+    defines
+    {
+      "CONFIG_DEBUG",
+      "YK_ENABLE_DEBUG_LOG"
     }
     libdirs
     {
@@ -316,7 +448,22 @@ project "ChildClient"
     kind "ConsoleApp"
     defines
     {
-      "CONFIG_RELEASE"
+      "CONFIG_RELEASE",
+      "YK_ENABLE_DEBUG_LOG"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}"
+    }
+
+  filter { "configurations:ReleaseDLL" }
+    symbols "Off"
+    optimize "Full"
+    kind "ConsoleApp"
+    defines
+    {
+      "CONFIG_RELEASE",
+      "YK_ENABLE_DEBUG_LOG"
     }
     libdirs
     {
@@ -336,4 +483,17 @@ project "ChildClient"
     {
       "%{LibDir.libjpeg_turbo_release}"
     }
-  
+
+  filter { "configurations:FinalDLL" }
+    symbols "Off"
+    optimize "Full"
+    kind "WindowedApp"
+    entrypoint "mainCRTStartup"
+    defines
+    {
+      "CONFIG_FINAL"
+    }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release}"
+    }

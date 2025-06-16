@@ -1,4 +1,5 @@
 #include <rpc_net.h>
+#include <YKLib.h>
 
 #include "Core/ScreenRecorder.h"
 #include "Core/ChildNetClient.h"
@@ -44,7 +45,7 @@ int main()
             uint32_t frameQuality = 0;
             msg >> frameQuality;
             screenRecorder.SetFrameQuality(frameQuality);
-            RPC_INFO("[NETWORK] Recieved a request to set the quality to '{}'", frameQuality);
+            YK_INFO("[NETWORK] Recieved a request to set the quality to '{}'", frameQuality);
             break;
           }
         }

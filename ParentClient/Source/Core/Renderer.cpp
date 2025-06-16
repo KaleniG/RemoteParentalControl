@@ -1,5 +1,7 @@
 #include <algorithm>
 
+#include <YKLib.h>
+
 #include <rpc_core.h>
 
 #include "Core/Renderer.h"
@@ -18,11 +20,11 @@ namespace rpc
     if (!m_Window)
     {
       glfwTerminate();
-      RPC_ASSERT(false, "[RENDERER] Failed to create GLFW window");
+      YK_ASSERT(false, "[RENDERER] Failed to create GLFW window");
     }
     glfwMakeContextCurrent(m_Window);
 
-    RPC_ASSERT(gladLoadGL(glfwGetProcAddress), "[RENDERER] Failed to initialize GLAD");
+    YK_ASSERT(gladLoadGL(glfwGetProcAddress), "[RENDERER] Failed to initialize GLAD");
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -178,7 +180,7 @@ void main() {
       if (!success)
       {
         glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        RPC_ERROR("[RENDERER] Shader compliation failed, shader type '{}' info log: {}", type, infoLog);
+        YK_ERROR("[RENDERER] Shader compliation failed, shader type '{}' info log: {}", type, infoLog);
       }
     }
     else
@@ -187,7 +189,7 @@ void main() {
       if (!success)
       {
         glGetProgramInfoLog(shader, 512, nullptr, infoLog);
-        RPC_ERROR("[RENDERER] Program linking failed, info log: {}", infoLog);
+        YK_ERROR("[RENDERER] Program linking failed, info log: {}", infoLog);
       }
     }
   }

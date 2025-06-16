@@ -5,6 +5,7 @@
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+#include <YKLib.h>
 
 namespace rpc
 {
@@ -58,13 +59,13 @@ namespace rpc
         {
           int32_t width, height, channels;
           stbi_uc* data = stbi_load_from_memory(jpegData.data(), static_cast<int32_t>(jpegData.size()), &width, &height, &channels, 3);
-          RPC_ASSERT(data, "[NETWORK] Failed to load image: {}", stbi_failure_reason());
+          YK_ASSERT(data, "[NETWORK] Failed to load image: {}", stbi_failure_reason());
 
           {
             std::lock_guard<std::mutex> lock(g_frameSizeMutex);
             if (g_frameHeight != height || g_frameWidth != width)
             {
-              RPC_WARN("[NETWORK] Invalid image size");
+              YK_WARN("[NETWORK] Invalid image size");
               stbi_image_free(data);
               return;
             }
@@ -88,7 +89,7 @@ namespace rpc
     }
     default:
     {
-      RPC_WARN("[NETWORK] Invalid message recieved, header id '{}'", static_cast<uint32_t>(msg.header.id));
+      YK_WARN("[NETWORK] Invalid message recieved, header id '{}'", static_cast<uint32_t>(msg.header.id));
       break;
     }
     }
