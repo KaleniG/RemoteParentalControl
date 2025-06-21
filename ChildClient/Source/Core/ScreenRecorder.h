@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <rpc_core.h>
+#include <turbojpeg.h>
 
 #if defined(PLATFORM_WINDOWS)
   #include <d3d11.h>
@@ -42,5 +43,6 @@ namespace rpc
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_D3DContext;
     Microsoft::WRL::ComPtr<IDXGIOutputDuplication> m_DXGIOutputDuplication;
     uint32_t m_FrameQuality;
+    tjhandle m_Compressor;
   };
 }

@@ -17,7 +17,7 @@ namespace rpc
     msg.header.id = net::message_type::client_frame_pixels_update;
 
     msg.push_back(frame.pixels);
-    msg << frame.pixels.size();
+    msg << frame.size;
     ChildNetClient::Send(msg);
   }
 }

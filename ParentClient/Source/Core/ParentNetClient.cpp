@@ -1,16 +1,21 @@
 #include "Core/ParentNetClient.h"
 #include "Core/Common.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
 #include <YKLib.h>
 
 namespace rpc
 {
   ParentClient::ParentClient(uint16_t port) 
-    : net::ServerInterface<net::message_type>(port) {}
+    : net::ServerInterface<net::message_type>(port) 
+  {
+    m_Decompressor = tjInitDecompress();
+    YK_ASSERT(m_Decompressor, "[SCREEN RECORDER] TurboJPEG error: failed to initialize the decompressor");
+  }
+
+  ParentClient::~ParentClient()
+  {
+    tjDestroy(m_Decompressor);
+  }
 
   void ParentClient::ChangeFrameQuality(uint32_t quality)
   {
@@ -57,27 +62,56 @@ namespace rpc
 
       std::thread([&, jpegData = std::move(jpegData)]()
         {
-          int32_t width, height, channels;
-          stbi_uc* data = stbi_load_from_memory(jpegData.data(), static_cast<int32_t>(jpegData.size()), &width, &height, &channels, 3);
-          YK_ASSERT(data, "[NETWORK] Failed to load image: {}", stbi_failure_reason());
+          yk::Timer timer;
+          timer.Start();
+
+          int32_t width, height, jpegSubsamp, jpegColorspace;
+          std::vector<uint8_t> rgbBuffer;
+          {
+            std::lock_guard<std::mutex> lock(m_DecompressorMutex);
+            if (tjDecompressHeader3(m_Decompressor, jpegData.data(), jpegData.size(), &width, &height, &jpegSubsamp, &jpegColorspace) != 0)
+            {
+              YK_ERROR("[SCREEN RECORDER] Compression failed: {}", tjGetErrorStr());
+              return;
+            }
+
+            rgbBuffer.resize(width * height * 3);
+
+            if (tjDecompress2(m_Decompressor, jpegData.data(), jpegData.size(), rgbBuffer.data(), width, 0, height, TJPF_RGB, 0) != 0)
+            {
+              YK_ERROR("[SCREEN RECORDER] Compression failed: {}", tjGetErrorStr());
+              return;
+            }
+          }
+
+          const int rowSize = width * 3;
+          std::vector<uint8_t> tempRow(rowSize);
+          for (int y = 0; y < height / 2; ++y)
+          {
+            uint8_t* rowTop = rgbBuffer.data() + y * rowSize;
+            uint8_t* rowBottom = rgbBuffer.data() + (height - 1 - y) * rowSize;
+
+            std::memcpy(tempRow.data(), rowTop, rowSize);
+            std::memcpy(rowTop, rowBottom, rowSize);
+            std::memcpy(rowBottom, tempRow.data(), rowSize);
+          }
 
           {
             std::lock_guard<std::mutex> lock(g_frameSizeMutex);
             if (g_frameHeight != height || g_frameWidth != width)
             {
               YK_WARN("[NETWORK] Invalid image size");
-              stbi_image_free(data);
               return;
             }
           }
 
           {
             std::lock_guard<std::mutex> lock(g_framePixelsMutex);
-            g_framePixelsData = std::vector<uint8_t>(data, data + width * height * 3);
+            g_framePixelsData = std::move(rgbBuffer);
             m_NewFrameAvailable.store(true);
           }
 
-          stbi_image_free(data);
+          YK_INFO("{}ms", static_cast<int32_t>(timer.ElapsedMilliseconds()));
         }).detach();
       
       break;

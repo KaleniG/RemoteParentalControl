@@ -11,8 +11,10 @@ IncludeDir["CoreCommon"]    = "CoreCommon/Source"
 IncludeDir["YKLib"]         = "Deps/YKLib/YKLib/Source"
 
 LibDir = {}
-LibDir["libjpeg_turbo_debug"]   = "Deps/libjpeg-turbo/build/Debug"
-LibDir["libjpeg_turbo_release"] = "Deps/libjpeg-turbo/build/Release"
+LibDir["libjpeg_turbo_debug32"]   = "Deps/libjpeg-turbo/build32/Debug"
+LibDir["libjpeg_turbo_debug64"]   = "Deps/libjpeg-turbo/build64/Debug"
+LibDir["libjpeg_turbo_release32"] = "Deps/libjpeg-turbo/build32/Release"
+LibDir["libjpeg_turbo_release64"] = "Deps/libjpeg-turbo/build64/Release"
 
 workspace "RemoteParentalControl"
   startproject "ParentClient"
@@ -274,6 +276,30 @@ project "ParentClient"
     "YKLib"
   }
 
+  filter { "platforms:Win32", "configurations:Debug or DebugDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug32}"
+    }
+
+  filter { "platforms:Win32", "configurations:Release or ReleaseDLL or Final or FinalDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release32}"
+    }
+
+  filter { "platforms:Win64", "configurations:Debug or DebugDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug64}"
+    }
+
+  filter { "platforms:Win64", "configurations:Release or ReleaseDLL or Final or FinalDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release64}"
+    }
+
   filter { "platforms:Win32 or Win64" }
     defines
     {
@@ -289,10 +315,6 @@ project "ParentClient"
       "CONFIG_DEBUG",
       "YK_ENABLE_DEBUG_LOG"
     }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_debug}"
-    }
 
   filter { "configurations:DebugDLL" }
     symbols "On"
@@ -302,10 +324,6 @@ project "ParentClient"
     {
       "CONFIG_DEBUG",
       "YK_ENABLE_DEBUG_LOG"
-    }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_debug}"
     }
 
   filter { "configurations:Release" }
@@ -317,10 +335,6 @@ project "ParentClient"
       "CONFIG_RELEASE",
       "YK_ENABLE_DEBUG_LOG"
     }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
-    }
 
    filter { "configurations:ReleaseDLL" }
     symbols "Off"
@@ -330,10 +344,6 @@ project "ParentClient"
     {
       "CONFIG_RELEASE",
       "YK_ENABLE_DEBUG_LOG"
-    }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
     }
 
   filter { "configurations:Final" }
@@ -345,10 +355,6 @@ project "ParentClient"
     {
       "CONFIG_FINAL"
     }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
-    }
 
   filter { "configurations:FinalDLL" }
     symbols "Off"
@@ -358,10 +364,6 @@ project "ParentClient"
     defines
     {
       "CONFIG_FINAL"
-    }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
     }
 
 project "ChildClient"
@@ -403,6 +405,30 @@ project "ChildClient"
     "YKLib"
   }
 
+  filter { "platforms:Win32", "configurations:Debug or DebugDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug32}"
+    }
+
+  filter { "platforms:Win32", "configurations:Release or ReleaseDLL or Final or FinalDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release32}"
+    }
+
+  filter { "platforms:Win64", "configurations:Debug or DebugDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_debug64}"
+    }
+
+  filter { "platforms:Win64", "configurations:Release or ReleaseDLL or Final or FinalDLL" }
+    libdirs
+    {
+      "%{LibDir.libjpeg_turbo_release64}"
+    }
+
   filter { "platforms:Win32 or Win64" }
     defines
     {
@@ -423,10 +449,6 @@ project "ChildClient"
       "CONFIG_DEBUG",
       "YK_ENABLE_DEBUG_LOG"
     }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_debug}"
-    }
 
   filter { "configurations:DebugDLL" }
     symbols "On"
@@ -436,10 +458,6 @@ project "ChildClient"
     {
       "CONFIG_DEBUG",
       "YK_ENABLE_DEBUG_LOG"
-    }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_debug}"
     }
 
   filter { "configurations:Release" }
@@ -451,10 +469,6 @@ project "ChildClient"
       "CONFIG_RELEASE",
       "YK_ENABLE_DEBUG_LOG"
     }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
-    }
 
   filter { "configurations:ReleaseDLL" }
     symbols "Off"
@@ -464,10 +478,6 @@ project "ChildClient"
     {
       "CONFIG_RELEASE",
       "YK_ENABLE_DEBUG_LOG"
-    }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
     }
 
   filter { "configurations:Final" }
@@ -479,10 +489,6 @@ project "ChildClient"
     {
       "CONFIG_FINAL"
     }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
-    }
 
   filter { "configurations:FinalDLL" }
     symbols "Off"
@@ -492,8 +498,4 @@ project "ChildClient"
     defines
     {
       "CONFIG_FINAL"
-    }
-    libdirs
-    {
-      "%{LibDir.libjpeg_turbo_release}"
     }

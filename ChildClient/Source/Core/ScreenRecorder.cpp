@@ -1,5 +1,8 @@
 #include "Core/ScreenRecorder.h"
 
+#define YK_ENABLE_DEBUG_LOG
+#define YK_ENABLE_DEBUG_PROFILING_LOG
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 #include <YKLib.h>
@@ -11,6 +14,9 @@ namespace rpc
     YK_ASSERT(frame_quality >= 1 && frame_quality <= 100, "[SCREEN RECORDER] Frame quality should be in range of 1 to 100");
 
     m_FrameQuality = frame_quality;
+
+    m_Compressor = tjInitCompress();
+    YK_ASSERT(m_Compressor, "[SCREEN RECORDER] TurboJPEG error: failed to initialize the compressor");
 
     stbi_flip_vertically_on_write(true);
 
@@ -42,7 +48,7 @@ namespace rpc
 
   ScreenRecorder::~ScreenRecorder()
   {
-
+    tjDestroy(m_Compressor);
   }
 
   void ScreenRecorder::SetFrameQuality(uint32_t quality)
@@ -150,7 +156,20 @@ namespace rpc
       }
     } JPEGBuffer;
 
-    stbi_write_jpg_to_func(MemoryBuffer::WriteCallback, &JPEGBuffer, desc.Width, desc.Height, 3, RGBData.data(), m_FrameQuality);
+    yk::Timer timer;
+    timer.Start();
+
+    uint8_t* jpegBuf = nullptr;
+    unsigned long jpegSize = 0;
+
+    if (tjCompress2(m_Compressor, RGBData.data(), desc.Width, 0, desc.Height, TJPF_RGB, &jpegBuf, &jpegSize, TJSAMP_444, m_FrameQuality, TJFLAG_FASTDCT) != 0)
+    {
+      YK_ERROR("[SCREEN RECORDER] Compression failed: {}", tjGetErrorStr());
+      return frame_data();
+    }
+
+    JPEGBuffer.data.assign(jpegBuf, jpegBuf + jpegSize);
+    tjFree(jpegBuf);
 
     frame_data frameData;
     frameData.height = desc.Height;
@@ -159,6 +178,7 @@ namespace rpc
     frameData.pixels = std::move(JPEGBuffer.data);
     frameData.size = frameData.pixels.size();
 
+    YK_INFO("{}ms", static_cast<int32_t>(timer.ElapsedMilliseconds()));
     return frameData;
   }
 }

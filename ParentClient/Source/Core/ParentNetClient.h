@@ -2,6 +2,7 @@
 
 #include <rpc_core.h>
 #include <rpc_net.h>
+#include <turbojpeg.h>
 
 #include "Core/Common.h"
 
@@ -11,6 +12,7 @@ namespace rpc
   {
   public:
     ParentClient(uint16_t port);
+    ~ParentClient();
 
     void ChangeFrameQuality(uint32_t quality);
 
@@ -25,5 +27,7 @@ namespace rpc
   private:
     std::shared_ptr<net::connection<net::message_type>> m_ConnectedClient = nullptr;
     std::atomic<bool> m_NewFrameAvailable = false;
+    tjhandle m_Decompressor;
+    std::mutex m_DecompressorMutex;
   };
 }

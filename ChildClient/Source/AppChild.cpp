@@ -1,3 +1,6 @@
+#define YK_ENABLE_DEBUG_LOG
+#define YK_ENABLE_DEBUG_PROFILING_LOG
+
 #include <rpc_net.h>
 #include <YKLib.h>
 
